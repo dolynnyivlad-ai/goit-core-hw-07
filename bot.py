@@ -94,12 +94,12 @@ class AddressBook(UserDict):
             birthday = datetime.strptime(record.birthday.value, '%d.%m.%Y').date()
             birthday_this_year = birthday.replace(year=today.year)
 
-            if birthday_this_year.isoweekday() == 6:
-                birthday_this_year += timedelta(days=2)
-            if birthday_this_year.isoweekday() == 7:
-                birthday_this_year += timedelta(days=1)
-
             if today <= birthday_this_year <= max_date:
+                if birthday_this_year.isoweekday() == 6:
+                    birthday_this_year += timedelta(days=2)
+                if birthday_this_year.isoweekday() == 7:
+                    birthday_this_year += timedelta(days=1)
+
                 upcoming_birthdays.append(
                     {'name': record.name.value,
                      'birthday': birthday_this_year.strftime('%d.%m.%Y')}
@@ -152,7 +152,7 @@ def add_contact(args, contacts: AddressBook):
 
 @input_error
 def change_contact(args, contacts: AddressBook):
-    name, phone, phone_number_old, phone_number_new = args
+    name, phone_number_old, phone_number_new = args
     record = contacts.find(name)
     record.edit_phone(phone_number_old, phone_number_new)
     return "Contact updated."
@@ -168,7 +168,7 @@ def phone_username(args, contacts: AddressBook):
 @input_error
 def show_all(contacts: AddressBook):
     if contacts:
-        return '\n'.join(str(record) for record in contacts.values())
+        return str(contacts)
     else:
         return "No contacts found."
 
@@ -185,7 +185,7 @@ def add_birthday(args, book: AddressBook):
 def show_birthday(args, book: AddressBook):
     name = args[0]
     record = book.find(name)
-    return record.birthday.value
+    return record.birthday.value if record.birthday else f'Birthday was not filled in for contact {name}'
 
 
 @input_error
@@ -223,10 +223,10 @@ def main():
         elif command == "all":
             print(show_all(book))
 
-        elif command == "add_birthday":
+        elif command == "add-birthday":
             print(add_birthday(args, book))
 
-        elif command == "show_birthday":
+        elif command == "show-birthday":
             print(show_birthday(args, book))
 
         elif command == "birthdays":
